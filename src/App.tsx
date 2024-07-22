@@ -1,35 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// import { useRequest } from "ahooks";
+import useRequest from './useRequest'
+import Mock from "mockjs";
+import React, { useState } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+async function getEmail(search?: string): Promise<string[]> {
+  console.log("@@@ 执行", search);
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(Mock.mock({ "data|5": ["@email"] }).data);
+    }, 300);
+  });
 }
 
-export default App
+ const Test = () => {
+  const [ready, setReady] = useState(false);
+
+  const { data, loading, run } = useRequest(getEmail, {
+    debounceWait: 10000,
+    debounceLeading: true,
+    debounceTrailing: false,
+    ready: ready,
+    manual: false,
+  });
+
+  return (
+    <div>
+      <button onClick={() => setReady((pre) => !pre)}>{String(ready)}</button>
+      <input
+        placeholder="Search Emails"
+        onChange={(e) => {
+          console.log("我出发onchange了？");
+          run(e.target.value);
+        }}
+      />
+      {loading ? (
+        <p>loading</p>
+      ) : (
+        <ul style={{ marginTop: 8 }}>
+          {data?.map((i) => (
+            <li key={i}>{i}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+export default Test;
